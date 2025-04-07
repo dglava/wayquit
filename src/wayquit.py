@@ -18,6 +18,10 @@ import gi
 gi.require_version("Gtk", "4.0")
 from gi.repository import Gtk, Gdk
 
+import os
+import os.path
+import configparser
+
 PROG_NAME = "Wayquit"
 
 class Wayquit(Gtk.ApplicationWindow):
@@ -72,11 +76,58 @@ class Wayquit(Gtk.ApplicationWindow):
         box.append(label)
         return box
 
+def parse_config():
+    """Parses config file.
+
+    Returns a configpargers object containing all our options.
+    """
+    default_options = {
+        "commands": {
+            "shutdown": "systemctl poweroff",
+            "suspend": "systemctl suspend",
+            "hibernate": "systemctl hibernate",
+            "reboot": "systemctl reboot",
+            "cancel": "None"
+            },
+        "shortcuts": {
+            "shutdown": "s",
+            "suspend": "u",
+            "hibernate": "h",
+            "reboot": "r",
+            "cancel": "c"
+            },
+        "options": {
+            "opacity": "0.2"
+            }
+        }
+    config = configparser.ConfigParser(defaults=default_options)
+
+    # defines the user and system config locations
+    try:
+        user = os.environ["XDG_CONFIG_HOME"]
+    except KeyError:
+        user = os.path.expanduser("~/.config/wayquit.conf")
+    system = "/etc/wayquit.conf"
+
+    # a local user config takes precedence
+    if os.path.exists(user):
+        config_file = user
+    elif os.path.exists(system):
+        config_file = system
+    else:
+        config_file = None
+
+    if config_file:
+        config.read(config_file)
+
+    return config
+
 def on_activate(prog):
     wayquit = Wayquit(application=prog)
     wayquit.present()
 
 def run():
+    config = parse_config()
     prog = Gtk.Application(application_id="test.test")
     prog.connect("activate", on_activate)
     prog.run()
