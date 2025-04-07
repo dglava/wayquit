@@ -25,8 +25,9 @@ import configparser
 PROG_NAME = "Wayquit"
 
 class Wayquit(Gtk.ApplicationWindow):
-    def __init__(self, **kargs):
+    def __init__(self, options, **kargs):
         super().__init__(**kargs, title=PROG_NAME)
+        self.options = options
         self.fullscreen()
         self.create_holding_box()
         self.make_transparent()
@@ -34,10 +35,10 @@ class Wayquit(Gtk.ApplicationWindow):
     def make_transparent(self):
         """Makes the window transparent."""
         self.add_css_class("transparent-window")
+        css = ".transparent-window {{ background-color: rgba(255, 255, 255, {opacity}); }}"
+        css_with_transparency_value = css.format(opacity=self.options["options"]["opacity"])
         css_provider = Gtk.CssProvider()
-        css_provider.load_from_string(
-            ".transparent-window { background-color: rgba(255, 255, 255, 0.2); }"
-        )
+        css_provider.load_from_string(css_with_transparency_value)
         Gtk.StyleContext.add_provider_for_display(
             Gdk.Display.get_default(),
             css_provider,
@@ -122,14 +123,14 @@ def parse_config():
 
     return config
 
-def on_activate(prog):
-    wayquit = Wayquit(application=prog)
+def on_activate(prog, options):
+    wayquit = Wayquit(options, application=prog)
     wayquit.present()
 
 def run():
     config = parse_config()
     prog = Gtk.Application(application_id="test.test")
-    prog.connect("activate", on_activate)
+    prog.connect("activate", on_activate, config)
     prog.run()
 
 if __name__ == "__main__":
