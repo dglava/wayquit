@@ -72,7 +72,12 @@ class Wayquit(Gtk.ApplicationWindow):
         button = Gtk.Button()
         button.connect("clicked", self.on_button_clicked, command)
 
-        label = Gtk.Label(label=command_name.capitalize())
+        label = Gtk.Label()
+        label.set_markup(
+            "<span fgcolor='white' size='large'>{}</span>".format(
+                command_name.capitalize()
+                )
+            )
 
         box.append(button)
         box.append(label)
