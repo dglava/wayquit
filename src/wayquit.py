@@ -39,7 +39,7 @@ def parse_config():
     """
     default_options = {
         "commands": {
-            "cancel": "none"
+            "cancel": ""
             },
         "options": {
             "opacity": "0.5"
@@ -144,6 +144,8 @@ class Wayquit(Gtk.ApplicationWindow):
                 )
 
     def on_button_clicked(self, gobject, command):
+        if command:
+            atexit.register(execute_command, command)
         self.get_application().quit()
 
 def on_activate(prog, options):
