@@ -25,18 +25,19 @@ import configparser
 PROG_NAME = "Wayquit"
 
 class Wayquit(Gtk.ApplicationWindow):
-    def __init__(self, options, **kargs):
+    def __init__(self, config, **kargs):
         super().__init__(**kargs, title=PROG_NAME)
-        self.options = options
+        self.config = config
         self.fullscreen()
-        self.create_holding_box()
         self.make_transparent()
+        self.create_holding_box()
+        self.add_buttons()
 
     def make_transparent(self):
         """Makes the window transparent."""
         self.add_css_class("transparent-window")
-        css = ".transparent-window {{ background-color: rgba(255, 255, 255, {opacity}); }}"
-        css_with_transparency_value = css.format(opacity=self.options["options"]["opacity"])
+        css = ".transparent-window {{ background-color: rgba(0, 0, 0, {opacity}); }}"
+        css_with_transparency_value = css.format(opacity=self.config["options"]["opacity"])
         css_provider = Gtk.CssProvider()
         css_provider.load_from_string(css_with_transparency_value)
         Gtk.StyleContext.add_provider_for_display(
@@ -59,66 +60,74 @@ class Wayquit(Gtk.ApplicationWindow):
         self.button_line.set_valign(Gtk.Align.CENTER)
         self.button_line.set_homogeneous(True)
         self.set_child(self.button_line)
-        # testing buttons
-        for i in range(5):
-            self.button_line.append(self.create_button(i))
 
-    def create_button(self, name):
+    def create_button(self, command_name, command):
         """Creates a button/label combo.
 
         Groups a button together with a label inside a Gtk.Box() and
         returns it.
         """
         box = Gtk.Box(spacing=10, orientation=Gtk.Orientation.VERTICAL)
+
         button = Gtk.Button()
-        button.set_opacity(1)
-        label = Gtk.Label(label=str(name))
+        button.connect("clicked", self.on_button_clicked, command)
+
+        label = Gtk.Label(label=command_name.capitalize())
+
         box.append(button)
         box.append(label)
+
         return box
+
+    def add_buttons(self):
+        """Adds the buttons into a line.
+
+        Goes through every command in the [commands] section and
+        adds a button for it, appending it to the button_line Gtk.Box().
+        """
+        for command_name in self.config["commands"]:
+            command = self.config["commands"][command_name]
+            self.button_line.append(
+                self.create_button(command_name, command)
+                )
+
+    def on_button_clicked(self, gobject, command):
+        self.get_application().quit()
 
 def parse_config():
     """Parses config file.
 
-    Returns a configpargers object containing all our options.
+    Returns a configparger object containing all our options.
+    It looks for config files in different locations, by priority:
+    XDG_CONFIG_HOME, ~/.config and /etc.
+
+    The "Cancel" button is always provided.
+    The opacity option is always provided, i.e. has a default value
+    unless overwritten.
     """
     default_options = {
         "commands": {
-            "shutdown": "systemctl poweroff",
-            "suspend": "systemctl suspend",
-            "hibernate": "systemctl hibernate",
-            "reboot": "systemctl reboot",
-            "cancel": "None"
-            },
-        "shortcuts": {
-            "shutdown": "s",
-            "suspend": "u",
-            "hibernate": "h",
-            "reboot": "r",
-            "cancel": "c"
+            "cancel": "none"
             },
         "options": {
-            "opacity": "0.2"
+            "opacity": "0.5"
             }
         }
-    config = configparser.ConfigParser(defaults=default_options)
 
-    # defines the user and system config locations
+    config = configparser.ConfigParser()
+    config.read_dict(default_options)
+
     try:
         user = os.environ["XDG_CONFIG_HOME"]
     except KeyError:
         user = os.path.expanduser("~/.config/wayquit.conf")
     system = "/etc/wayquit.conf"
 
-    # a local user config takes precedence
     if os.path.exists(user):
         config_file = user
+        config.read(config_file)
     elif os.path.exists(system):
         config_file = system
-    else:
-        config_file = None
-
-    if config_file:
         config.read(config_file)
 
     return config
