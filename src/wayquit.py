@@ -21,8 +21,55 @@ from gi.repository import Gtk, Gdk
 import os
 import os.path
 import configparser
+import subprocess
+import atexit
 
 PROG_NAME = "Wayquit"
+
+def parse_config():
+    """Parses config file.
+
+    Returns a configparger object containing all our options.
+    It looks for config files in different locations, by priority:
+    XDG_CONFIG_HOME, ~/.config and /etc.
+
+    The "Cancel" button is always provided.
+    The opacity option is always provided, i.e. has a default value
+    unless overwritten.
+    """
+    default_options = {
+        "commands": {
+            "cancel": "none"
+            },
+        "options": {
+            "opacity": "0.5"
+            }
+        }
+
+    config = configparser.ConfigParser()
+    config.read_dict(default_options)
+
+    try:
+        user = os.environ["XDG_CONFIG_HOME"]
+    except KeyError:
+        user = os.path.expanduser("~/.config/wayquit.conf")
+    system = "/etc/wayquit.conf"
+
+    if os.path.exists(user):
+        config_file = user
+        config.read(config_file)
+    elif os.path.exists(system):
+        config_file = system
+        config.read(config_file)
+
+    return config
+
+def execute_command(command):
+    """Executes the provided command (program) inside the shell."""
+    try:
+        subprocess.Popen(command.split())
+    except FileNotFoundError:
+        pass
 
 class Wayquit(Gtk.ApplicationWindow):
     def __init__(self, config, **kargs):
@@ -98,44 +145,6 @@ class Wayquit(Gtk.ApplicationWindow):
 
     def on_button_clicked(self, gobject, command):
         self.get_application().quit()
-
-def parse_config():
-    """Parses config file.
-
-    Returns a configparger object containing all our options.
-    It looks for config files in different locations, by priority:
-    XDG_CONFIG_HOME, ~/.config and /etc.
-
-    The "Cancel" button is always provided.
-    The opacity option is always provided, i.e. has a default value
-    unless overwritten.
-    """
-    default_options = {
-        "commands": {
-            "cancel": "none"
-            },
-        "options": {
-            "opacity": "0.5"
-            }
-        }
-
-    config = configparser.ConfigParser()
-    config.read_dict(default_options)
-
-    try:
-        user = os.environ["XDG_CONFIG_HOME"]
-    except KeyError:
-        user = os.path.expanduser("~/.config/wayquit.conf")
-    system = "/etc/wayquit.conf"
-
-    if os.path.exists(user):
-        config_file = user
-        config.read(config_file)
-    elif os.path.exists(system):
-        config_file = system
-        config.read(config_file)
-
-    return config
 
 def on_activate(prog, options):
     wayquit = Wayquit(options, application=prog)
