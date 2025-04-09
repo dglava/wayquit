@@ -3,7 +3,7 @@ Utility script for logging out of a session. Continuation of
 [Obquit](https://github.com/dglava/obquit), but this one works with
 Wayland and uses Gtk4.
 
-# Screenshot goes here
+![](https://raw.githubusercontent.com/dglava/wayquit/master/screen.png)
 
 ##### Dependencies (Arch package names)
 * python
@@ -19,4 +19,4 @@ Wayland and uses Gtk4.
 - Edit the config file (`/etc/wayquit.conf` or `~/.config/wayquit.conf`)
 - Run `wayquit`
 
-# Link to a PKGBUILD goes here
+Arch Linux users can use the [PKGBUILD from here](https://raw.githubusercontent.com/dglava/pkgbuilds/refs/heads/master/wayquit-git/PKGBUILD).
