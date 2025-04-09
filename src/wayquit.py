@@ -76,9 +76,13 @@ def execute_command(command):
 
 class Wayquit(Gtk.ApplicationWindow):
     def __init__(self, config, **kargs):
-        super().__init__(**kargs, title=PROG_NAME)
+        super().__init__(
+            **kargs,
+            title=PROG_NAME,
+            decorated=False,
+            fullscreened=True
+            )
         self.config = config
-        self.fullscreen()
         self.make_transparent()
         self.handle_shortcuts()
         self.create_holding_box()
