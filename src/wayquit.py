@@ -65,7 +65,7 @@ def parse_config():
     return config
 
 def execute_command(command):
-    """Executes the provided command (program) inside the shell."""
+    """Executes the provided command (program)."""
     try:
         subprocess.Popen(command.split())
     except FileNotFoundError:
@@ -77,6 +77,7 @@ class Wayquit(Gtk.ApplicationWindow):
         self.config = config
         self.fullscreen()
         self.make_transparent()
+        self.handle_shortcuts()
         self.create_holding_box()
         self.add_buttons()
 
@@ -92,6 +93,22 @@ class Wayquit(Gtk.ApplicationWindow):
             css_provider,
             Gtk.STYLE_PROVIDER_PRIORITY_APPLICATION
         )
+
+    def handle_shortcuts(self):
+        """Add keyboard shortcuts from config file."""
+        shortcuts = Gtk.ShortcutController()
+        self.add_controller(shortcuts)
+
+        for command_name in self.config["shortcuts"]:
+            if command_name in self.config["commands"]:
+                shortcut_key = self.config["shortcuts"][command_name]
+                command = self.config["commands"][command_name]
+
+                shortcut = Gtk.Shortcut(
+                    trigger=Gtk.ShortcutTrigger.parse_string(shortcut_key),
+                    action=Gtk.CallbackAction.new(self.on_key_pressed, command)
+                )
+                shortcuts.add_shortcut(shortcut)
 
     def create_holding_box(self):
         """Creates the base layout.
@@ -143,7 +160,20 @@ class Wayquit(Gtk.ApplicationWindow):
                 self.create_button(command_name, command)
                 )
 
-    def on_button_clicked(self, gobject, command):
+    def on_button_clicked(self, _gobject, command):
+        """Handles button clicks.
+
+        Runs the passed command just before the program terminates.
+        """
+        if command:
+            atexit.register(execute_command, command)
+        self.get_application().quit()
+
+    def on_key_pressed(self, _widget, _variant, command):
+        """Handles keyboard presses.
+
+        Runs the passed command just before the program terminates.
+        """
         if command:
             atexit.register(execute_command, command)
         self.get_application().quit()
