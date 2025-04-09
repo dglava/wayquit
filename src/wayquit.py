@@ -23,8 +23,10 @@ import os.path
 import configparser
 import subprocess
 import atexit
+import shlex
 
 PROG_NAME = "Wayquit"
+ID = "prog.dglava.wayquit"
 
 def parse_config():
     """Parses config file.
@@ -70,7 +72,7 @@ def parse_config():
 def execute_command(command):
     """Executes the provided command (program)."""
     try:
-        subprocess.Popen(command.split())
+        subprocess.Popen(shlex.split(command))
     except FileNotFoundError:
         pass
 
@@ -191,7 +193,7 @@ def on_activate(prog, options):
 
 def run():
     config = parse_config()
-    prog = Gtk.Application(application_id="test.test")
+    prog = Gtk.Application(application_id=ID)
     prog.connect("activate", on_activate, config)
     prog.run()
 
