@@ -28,6 +28,7 @@ import sys
 
 PROG_NAME = "Wayquit"
 ID = "prog.dglava.wayquit"
+LOCKFILE = "/tmp/wayquit.lock"
 
 def parse_config():
     """Parses config file.
@@ -79,6 +80,17 @@ def execute_command(command):
         subprocess.Popen(shlex.split(command))
     except FileNotFoundError:
         pass
+
+def check_if_running():
+    if os.path.exists(LOCKFILE):
+        print("Wayquit already running.")
+        sys.exit(1)
+    else:
+        open("/tmp/wayquit.lock", "w")
+        atexit.register(remove_lockfile)
+
+def remove_lockfile():
+    os.remove(LOCKFILE)
 
 class Wayquit(Gtk.ApplicationWindow):
     def __init__(self, config, **kargs):
@@ -191,11 +203,12 @@ class Wayquit(Gtk.ApplicationWindow):
             atexit.register(execute_command, command)
         self.get_application().quit()
 
-def on_activate(prog, options):
-    wayquit = Wayquit(options, application=prog)
+def on_activate(prog, config):
+    wayquit = Wayquit(config, application=prog)
     wayquit.present()
 
 def run():
+    check_if_running()
     config = parse_config()
     prog = Gtk.Application(application_id=ID)
     prog.connect("activate", on_activate, config)
