@@ -41,6 +41,9 @@ def parse_config():
         "commands": {
             "cancel": ""
             },
+        "shortcuts": {
+            "cancel": "Escape"
+            },
         "options": {
             "opacity": "0.5"
             }
