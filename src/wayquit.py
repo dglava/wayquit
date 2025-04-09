@@ -27,7 +27,7 @@ import shlex
 import sys
 
 PROG_NAME = "Wayquit"
-ID = "prog.dglava.wayquit"
+APP_ID = "prog.dglava.wayquit"
 LOCKFILE = "/tmp/wayquit.lock"
 
 def parse_config():
@@ -91,6 +91,15 @@ def check_if_running():
 
 def remove_lockfile():
     os.remove(LOCKFILE)
+
+class WayquitApp(Gtk.Application):
+    def __init__(self, config):
+        super().__init__(application_id=APP_ID)
+        self.config = config
+
+    def do_activate(self):
+        wayquit_app = Wayquit(self.config, application=self)
+        wayquit_app.present()
 
 class Wayquit(Gtk.ApplicationWindow):
     def __init__(self, config, **kargs):
@@ -203,16 +212,11 @@ class Wayquit(Gtk.ApplicationWindow):
             atexit.register(execute_command, command)
         self.get_application().quit()
 
-def on_activate(prog, config):
-    wayquit = Wayquit(config, application=prog)
-    wayquit.present()
-
 def run():
     check_if_running()
     config = parse_config()
-    prog = Gtk.Application(application_id=ID)
-    prog.connect("activate", on_activate, config)
-    prog.run()
+    app = WayquitApp(config)
+    app.run()
 
 if __name__ == "__main__":
     run()
