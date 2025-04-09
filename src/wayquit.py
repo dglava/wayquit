@@ -52,10 +52,10 @@ def parse_config():
     config = configparser.ConfigParser()
     config.read_dict(default_options)
 
-    try:
-        user = os.environ["XDG_CONFIG_HOME"]
-    except KeyError:
-        user = os.path.expanduser("~/.config/wayquit.conf")
+    user = os.environ.get(
+        "XDG_CONFIG_HOME",
+        os.path.expanduser("~/.config/wayquit.conf")
+        )
     system = "/etc/wayquit.conf"
 
     if os.path.exists(user):
