@@ -174,7 +174,7 @@ class Wayquit(Gtk.ApplicationWindow):
 
         Runs the passed command just before the program terminates.
         """
-        if command:
+        if command and command != "":
             atexit.register(execute_command, command)
         self.get_application().quit()
 
@@ -183,7 +183,7 @@ class Wayquit(Gtk.ApplicationWindow):
 
         Runs the passed command just before the program terminates.
         """
-        if command:
+        if command and command != "":
             atexit.register(execute_command, command)
         self.get_application().quit()
 
