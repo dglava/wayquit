@@ -24,6 +24,7 @@ import configparser
 import subprocess
 import atexit
 import shlex
+import sys
 
 PROG_NAME = "Wayquit"
 ID = "prog.dglava.wayquit"
@@ -66,6 +67,12 @@ def parse_config():
     elif os.path.exists(system):
         config_file = system
         config.read(config_file)
+
+    try:
+        float(config["options"]["opacity"])
+    except ValueError:
+        print("Error: Opacity value not valid. Must be float between 0 and 1.")
+        sys.exit(1)
 
     return config
 
