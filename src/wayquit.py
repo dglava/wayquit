@@ -55,18 +55,15 @@ def parse_config():
     config = configparser.ConfigParser()
     config.read_dict(default_options)
 
-    user = os.environ.get(
-        "XDG_CONFIG_HOME",
-        os.path.expanduser("~/.config/wayquit.conf")
-        )
-    system = "/etc/wayquit.conf"
+    config_name = "wayquit.conf"
+    user_config_dir = os.environ.get("XDG_CONFIG_HOME", os.path.expanduser("~/.config/"))
+    user_config_path = os.path.join(user_config_dir, config_name)
+    system_config_path = os.path.join("/etc", config_name)
 
-    if os.path.exists(user):
-        config_file = user
-        config.read(config_file)
-    elif os.path.exists(system):
-        config_file = system
-        config.read(config_file)
+    if os.path.exists(user_config_path):
+        config.read(user_config_path)
+    elif os.path.exists(system_config_path):
+        config.read(system_config_path)
 
     try:
         float(config["options"]["opacity"])
